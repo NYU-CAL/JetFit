@@ -1,5 +1,5 @@
 # JetFit
-Gamma-ray Burst Afterglow Light Curve Fitting Tool 
+Gamma-ray Burst Afterglow Light Curve Fitting Tool. 
 
 JetFit package can fit the GRB afterglow light curves using boosted fireball model (details see [Wu \& MacFadyen (2018)](https://iopscience.iop.org/article/10.3847/1538-4357/aae9de)). It is based on the ScaleFit ([Ryan et al. (2015)](http://iopscience.iop.org/article/10.1088/0004-637X/799/1/3/pdf)). JetFit is in some state between alpha and beta. 
 
