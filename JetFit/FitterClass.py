@@ -165,9 +165,9 @@ class FitterClass:
             i += 1
             DeltaTime = time() - Start
             Label = "%02d m %02d s" %(DeltaTime/60, DeltaTime%60)
-            sys.stdout.write('\r Burning in... %.1f%% Time=%s' %((100.0*i)/(BurnLength), Label))
+            sys.stdout.write('\r Burning ... %.1f%% Time=%s' %((100.0*i)/(BurnLength), Label))
             sys.stdout.flush()
-
+        sys.stdout.write('\n')
         ### Save postion to self._Position1, which is the starting position for later run. 
         self._Position1 = StepResult[0]
 
@@ -208,9 +208,9 @@ class FitterClass:
             i += 1
             DeltaTime = time() - Start
             Label = "%02d m %02d s" %(DeltaTime/60, DeltaTime%60)
-            sys.stdout.write('\r Running... %.1f%% Time=%s' %((100.0*i)/(RunLength), Label))
+            sys.stdout.write('\r Running ... %.1f%% Time=%s' %((100.0*i)/(RunLength), Label))
             sys.stdout.flush()
-
+        sys.stdout.write('\n')
         ### Save results
         Result = {}
         if self._SamplerType is 'Ensemble':
