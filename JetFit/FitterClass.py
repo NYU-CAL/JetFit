@@ -50,6 +50,13 @@ class FitterClass:
             LogAxis (list of str): whether certain axis is measured in log scale
         
         '''
+        
+        # Prevent modification of outside dictionary
+        import copy
+        Info = copy.deepcopy(Info)
+        FitBound = copy.deepcopy(FitBound)
+        P = copy.deepcopy(P)
+        
         self.FluxGenerator = FluxGeneratorClass(Table, LogTable, LogAxis)
         self._SetFitParameter(Info, FitBound, P, Trial=Trial)
     
