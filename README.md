@@ -7,13 +7,12 @@ JetFit package can fit the GRB afterglow light curves using boosted fireball mod
 The table is almost the same as the table used in [Wu \& MacFadyen (2018)](https://iopscience.iop.org/article/10.3847/1538-4357/aae9de). We are improving the table by increasing resolution, adding synchrotron absorption and wind circumburst medium. Hopefully, it will come out pretty soon. 
 
 # Installation
-Anaconda is recommened to be installed. The detailed python package list can be found in package_list.txt. To set up the exactly the same virtual environment, run ```conda create --name JetFit --file package_list.txt``` 
+Anaconda is recommened to be installed. The detailed python package list can be found in package_list.txt. To set up the virtual environment, run command `conda create --name JetFit --file package_list.txt` in terminal. Then, run `conda activate JetFit` to activate the environment. 
 
+# Usage
+To fit a light curve, run `python Example_Fitter.py`. 
 
-to create a environment `JetFit`. Then, run `conda activate JetFit` to activate the environment. It is all set. 
-
+# Brief Description
 JetFit package consists of three classes: Interpolator, FluxGenerator and Fitter. FluxGenerator can be used separately. 
 
-Two examples are provided to demonstrate the basic use of the package. 
-  * Example_FluxGenerator.ipynb shows how to generate synthetic light curves with given parameters. 
-  * Example_Fitter.ipynb shows how to fit GW170817 and plot best-fitting light curves and posterior distributions.
+
