@@ -33,7 +33,7 @@ FitBound = {
 # For non-fiting parameters, P set default values. 
 # For fitting paramters, P:
 #  1. If Explore == True: Fitting parameters are randomly distributed in whole parameter space.
-#  2. If Explore != True: Fitting parameters are randomly distributed around maximum posterior region.
+#  2. If Explore != True: Fitting parameters are randomly distributed around maximum posterior region, indicated by values in P. 
 
 Explore = True
 
