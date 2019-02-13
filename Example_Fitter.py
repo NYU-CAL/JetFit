@@ -204,7 +204,8 @@ Median = {}
 Summary = c.analysis.get_summary()
 for key in Label:
     Median[key] = Summary[key][1]
-    
+
+print(Median)
 fig = c.plotter.plot(figsize='PAGE',truth=Median)
 plt.savefig('contour.png')
 
