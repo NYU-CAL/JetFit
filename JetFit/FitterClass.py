@@ -1,5 +1,5 @@
 '''
-This module contains the ScaleFit class for boosted fireball model. It depends on FluxGenerator and FluxData modules. The definitions for posterior function and prior function are also included. 
+This module contains the ScaleFit class for boosted fireball model. It depends on FluxGenerator and FluxData modules. The definitions for posterior function and prior function are also included.
 
 '''
 
@@ -12,70 +12,70 @@ import sys
 
 class FitterClass:
     '''
-    Perform MCMC analysis to fit boosted fireball model to observational data. 
+    Perform MCMC analysis to fit boosted fireball model to observational data.
     '''
     ### Private: Fitting Parameter
     _FitDim = 0
     _Info = None
     _FitBound = None
     _P = None
-    
-    ### Private: Sampler 
+
+    ### Private: Sampler
     _Sampler = None
     _SamplerType = None
     _Position0 = None
     _Position1 = None
-    
+
     ### Public: Interpolator and Sampler
     FluxGenerator = None
     TableInfo = None
-    
+
     ### Public: Observation Data
     Times = None
     TimeBnds = None
     Fluxes = None
     FluxErrs = None
     Freqs = None
-    
-    def __init__(self, Table, Info, FitBound, P, Trial=False, LogTable=True, LogAxis=['tau']):
+
+    def __init__(self, Table, Info, FitBound, P, Explore=False, LogTable=True, LogAxis=['tau']):
         '''
-        Initialize ScaleFit class. 
+        Initialize ScaleFit class.
         Args:
             Table (str): directory to boosted fireball table
             FitParameter (Array): values for fitting parameters
             FitBound (2D Array): lower & upper bounds for fitting parameters: Shape = (len(FitParameter, 2))
             P (dictionary): contains all paramters {z, dL, E, n, p, epse, epsb, xiN, Eta0, GammaB,theta_obs}
-            Trial (bool): For trial run, walkers will randomly distribute in the whole parameter space. This helps to find the maximum posterior. Then, set Trial = False, the walkers will distribute near dictionary P. 
+            Explore (bool): For Explore run, walkers will randomly distribute in the whole parameter space. This helps to find the maximum posterior. Then, set Explore = False, the walkers will distribute near dictionary P.
             LogTable (bool): whether Table is measured in log scale
             LogAxis (list of str): whether certain axis is measured in log scale
-        
+
         '''
-        
+
         # Prevent modification of outside dictionary
         import copy
         Info = copy.deepcopy(Info)
         FitBound = copy.deepcopy(FitBound)
         P = copy.deepcopy(P)
-        
+
         self.FluxGenerator = FluxGeneratorClass(Table, LogTable, LogAxis)
-        self._SetFitParameter(Info, FitBound, P, Trial=Trial)
-    
+        self._SetFitParameter(Info, FitBound, P, Explore=Explore)
+
     ### Private Function
-    def _SetFitParameter(self, Info, FitBound, P, Trial = False):
+    def _SetFitParameter(self, Info, FitBound, P, Explore = False):
         '''
         Args:
-            Info (dict): information for MCMC. For example, set fitting parameters. 
+            Info (dict): information for MCMC. For example, set fitting parameters.
             FitBound (dict): Bounds for parameters.
             P (dictionary): contains all paramters {z, dL, E, n, p, epse, epsb, xiN, Eta0, GammaB,theta_obs}
-            Trial (bool): For trial run, walkers will randomly distribute in the whole parameter space.
-               This helps to find the maximum posterior. Then, set Trial = False, the walkers will distribute 
-               near dictionary P. 
+            Explore (bool): For Explore run, walkers will randomly distribute in the whole parameter space.
+               This helps to find the maximum posterior. Then, set Explore = False, the walkers will distribute
+               near dictionary P.
         '''
 
         self._FitDim = len(Info['Fit'])
         self._Info = Info
 
-        ### only consider bounds for fitting parameters. Set proper scales. 
+        ### only consider bounds for fitting parameters. Set proper scales.
         temp = []
         for key in Info['Fit']:
             if key in Info['Log']:
@@ -84,27 +84,27 @@ class FitterClass:
                 else:
                     temp.append(np.log(FitBound[key]))
             else:
-                temp.append(FitBound[key])    
+                temp.append(FitBound[key])
         self._FitBound = np.array(temp)
         self._FitBoundDict = FitBound
 
         ### Set initial regions for walkers
-        if Trial == True:
+        if Explore == True:
             self._InitialBound = self._FitBound
         else:
             temp = []
             for key in Info['Fit']:
                 if key in Info['Log']:
-                    if Info['LogType'] == 'Log10':                
+                    if Info['LogType'] == 'Log10':
                         temp.append([np.log10(P[key])*0.98, np.log10(P[key])*1.02])
                     else:
                         temp.append([np.log(P[key])*0.98, np.log(P[key])*1.02])
                 else:
-                    temp.append([P[key]*0.98, P[key]*1.02])   
+                    temp.append([P[key]*0.98, P[key]*1.02])
             self._InitialBound = np.array(temp)
 
         self._P = P.copy()
-    
+
     ### Public Functions
     def LoadData(self, Times, TimeBnds, Fluxes, FluxErrs, Freqs):
         '''
@@ -122,10 +122,10 @@ class FitterClass:
         self.Fluxes = Fluxes
         self.FluxErrs = FluxErrs
         self.Freqs = Freqs
-    
+
     def GetSampler(self, SamplerType, NTemps, NWalkers, Threads):
         '''
-        Set up sampler and position. 
+        Set up sampler and position.
         Args:
             SamplerType (str): 'Ensemble' or 'PT'
             NTemps (int): only valid for Parallel-Tempering. set the # of temperature
@@ -135,18 +135,18 @@ class FitterClass:
 
         self._SamplerType = SamplerType
         if SamplerType == "Ensemble":
-            self._Sampler = em.EnsembleSampler(NWalkers, self._FitDim, LogPosterior, threads=Threads, 
+            self._Sampler = em.EnsembleSampler(NWalkers, self._FitDim, LogPosterior, threads=Threads,
                                               args=[self._FitBound, self._Info, self._P, self.FluxGenerator, self.Times, self.Freqs, self.Fluxes, self.FluxErrs])
             self._Position0 = self._InitialBound[:,0] + (self._InitialBound[:,1]-self._InitialBound[:,0])*np.random.rand(NWalkers, self._FitDim)
         else:
-            self._Sampler = em.PTSampler(NTemps, NWalkers, self._FitDim, LogLike, LogPrior, threads=Threads, 
+            self._Sampler = em.PTSampler(NTemps, NWalkers, self._FitDim, LogLike, LogPrior, threads=Threads,
                 loglargs=[self._Info, self._P, self.FluxGenerator, self.Times, self.Freqs, self.Fluxes, self.FluxErrs],
                 logpargs=[self._FitBound, self._Info]
-                )        
+                )
             self._Position0 = self._InitialBound[:,0] + (self._InitialBound[:,1]-self._InitialBound[:,0])*np.random.rand(NTemps, NWalkers, self._FitDim)
 
-    
-    
+
+
     def BurnIn(self, BurnLength = 500, Output = None):
         '''
         Args:
@@ -168,7 +168,7 @@ class FitterClass:
             sys.stdout.write('\r Burning ... %.1f%% Time=%s' %((100.0*i)/(BurnLength), Label))
             sys.stdout.flush()
         sys.stdout.write('\n')
-        ### Save postion to self._Position1, which is the starting position for later run. 
+        ### Save postion to self._Position1, which is the starting position for later run.
         self._Position1 = StepResult[0]
 
         ### Save Burn in results
@@ -182,13 +182,13 @@ class FitterClass:
             BurnInResult['LnProbability'] = self._Sampler.lnprobability[0]
             BurnInResult['AcceptanceFraction'] = self._Sampler.acceptance_fraction[0]
 
-        if Output is not None: 
+        if Output is not None:
             with open(Output, 'wb') as handle:
                 dump(Result, handle, protocol=HIGHEST_PROTOCOL)
 
         return BurnInResult
-    
-    
+
+
     def RunSampler(self, RunLength = 500, Output = None):
         '''
         Args:
@@ -222,7 +222,7 @@ class FitterClass:
             Result['LnProbability'] = self._Sampler.lnprobability[0]
             Result['AcceptanceFraction'] = self._Sampler.acceptance_fraction[0]
 
-        if Output is not None: 
+        if Output is not None:
             OutputData = {
                 "Result": Result,
                 "Info": self._Info,
@@ -240,7 +240,7 @@ We need to explicitly define the prior, likelyhood and posterior.
 To run emcee in parallel, the definitions for prior and likelyhood are tricky. Please check the emcee document: http://dfm.io/emcee/current/user/advanced/#multiprocessing
 
 '''
-def LogPrior(FitParameter, FitBound, Info):    
+def LogPrior(FitParameter, FitBound, Info):
     '''
     This function is for PTSampler
     Args:
@@ -250,12 +250,12 @@ def LogPrior(FitParameter, FitBound, Info):
     Return:
         float: if within bounds, log(prior); else, -inf;
     '''
-    
+
     if((FitParameter[:]>FitBound[:,0]) * (FitParameter[:]<FitBound[:,1])).all():
         if 'theta_obs' in Info['Fit']:
             if Info['ThetaObsPrior'] == 'Sine':
                 i = np.argwhere(Info['Fit'] == 'theta_obs')[0][0]
-                return np.log(np.sin(FitParameter[i]))              
+                return np.log(np.sin(FitParameter[i]))
             elif Info['ThetaObsPrior'] == 'Uniform':
                 return 0.0
             else:
@@ -266,40 +266,40 @@ def LogPrior(FitParameter, FitBound, Info):
         return -np.inf
 
 
-def LogLike(FitParameter, Info, P, FluxGenerator, Times, Freqs, Fluxes, FluxErrs):    
+def LogLike(FitParameter, Info, P, FluxGenerator, Times, Freqs, Fluxes, FluxErrs):
     '''
     This function is for PTSampler
     Args:
         FitParameter (Array): values for fitting parameters
         Info (dict): prior information
         P (dictionary): contains all paramters {z, dL, E, n, p, epse, epsb, xiN, Eta0, GammaB,theta_obs}
-        FluxGenerator (object): flux generator 
+        FluxGenerator (object): flux generator
         Times (Array): observational time in second
         Freqs (Array): frequencies. The length should be the same as Times
         Fluxes (Array): flux in mJy
         FluxErrs (Array): flux error in mJy
     Return:
         float: caculate Chi^2 and return -0.5*Chi^2 (details see Ryan+ 2014)
-    
+
     '''
-    
+
     for i, key in enumerate(Info['Fit']):
         if key in Info['Log']:
             if Info['LogType'] == 'Log10':
                 P[key] = np.power(10.,FitParameter[i])
             else:
                 P[key] = np.exp(FitParameter[i])
-        else: 
-            P[key] = FitParameter[i]   
-    
-    ### To do: Integrated flux 
+        else:
+            P[key] = FitParameter[i]
+
+    ### To do: Integrated flux
     if Info['FluxType'] == 'Spectral':
         FluxesModel = FluxGenerator.GetSpectral(Times, Freqs, P)
     elif Info['FluxType'] == 'Integrated':
         FluxesModel = FluxGenerator.GetIntegratedFlux(Times, Freqs, P)
     else:
         raise ValueError("Integrated Flux has not implemented!")
-    
+
     if np.isnan(FluxesModel[0]):
         return -np.inf
     else:
@@ -310,13 +310,13 @@ def LogLike(FitParameter, Info, P, FluxGenerator, Times, Freqs, Fluxes, FluxErrs
 
 def LogPosterior(FitParameter, FitBound, Info, P, FluxGenerator, Times, Freqs, Fluxes, FluxErrs):
     '''
-    This function is for EnsembleSampler. 
+    This function is for EnsembleSampler.
     Args:
         FitParameter (Array): values for fitting parameters
         FitBound (2D Array): lower & upper bounds for fitting parameters: Shape = (len(FitParameter, 2))
         Info (dict): prior information
         P (dictionary): contains all paramters {z, dL, E, n, p, epse, epsb, xiN, Eta0, GammaB,theta_obs}
-        FluxGenerator (object): flux generator 
+        FluxGenerator (object): flux generator
         Times (Array): observational time in second
         Freqs (Array): frequencies. The length should be the same as Times
         Fluxes (Array): flux in mJy
@@ -324,13 +324,13 @@ def LogPosterior(FitParameter, FitBound, Info, P, FluxGenerator, Times, Freqs, F
     Return:
         float: log(prior) + log(likelyhood)
     '''
-    
+
     ### Log Prior
     LogPriorFunction = LogPrior(FitParameter, FitBound, Info)
 
-    ### Log Likelyhood 
+    ### Log Likelyhood
     LogLikeFunction = LogLike(FitParameter, Info, P, FluxGenerator, Times, Freqs, Fluxes, FluxErrs)
-    
+
     ### Log Posterior
     if np.isfinite(LogPriorFunction) and np.isfinite(LogLikeFunction):
         LogPosterior = LogPriorFunction + LogLikeFunction

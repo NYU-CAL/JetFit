@@ -6,7 +6,7 @@ import pandas as pd
 from JetFit import FitterClass
 
 ### Parameters
-Table = "./Table.h5" 
+Table = "./Table.h5"
 
 Info = {
     'Fit': np.array(['Eta0', 'GammaB','theta_obs']),         # Fitting parameters (Parameter names see P dictionary below)
@@ -16,7 +16,7 @@ Info = {
     'FluxType': 'Spectral'                           # Flux type: Spectral or Integrated
 }
 
-# Bounds for parameters. All in linear scale. 
+# Bounds for parameters. All in linear scale.
 FitBound = {
     'E': np.array([1e-6, 1e3]),
     'n': np.array([1e-6, 1e3]),
@@ -29,10 +29,14 @@ FitBound = {
 }
 
 
-# P serves two purposes: 
-#    1. Set default values for non-fiting parameters.
-#    2. In formal run, set maximum posterior values for fitting parameters. (In trial run, values are ignored.)
-       
+# P:
+# For non-fiting parameters, P set default values. 
+# For fitting paramters, P:
+#  1. If Explore == True: Fitting parameters are randomly distributed in whole parameter space.
+#  2. If Explore != True: Fitting parameters are randomly distributed around maximum posterior region.
+
+Explore = True
+
 P = {
     'E': 0.15869069395227384,
     'Eta0': 7.973477192135503,
@@ -47,36 +51,36 @@ P = {
     'z': 0.00973
 }
 
-Trial = True
+
 
 
 ### parameters for fitter.
-# Path to observation data. 
+# Path to observation data.
 GRB = './GW170817.csv'
 
 # for demostaration
 SamplerType = "ParallelTempered"
-NTemps = 2          
-NWalkers = 10      
-Threads = 8        
+NTemps = 2
+NWalkers = 10
+Threads = 8
 
-BurnLength = 20     
-RunLength = 20     
+BurnLength = 20
+RunLength = 20
 
-## For GW170817 and bellow parameters, it takes ~24 hours to finish. 
-## For quick run, values of the parameters can be modified accordingly. 
+## For GW170817 and bellow parameters, it takes ~24 hours to finish.
+## For quick run, values of the parameters can be modified accordingly.
 # SamplerType = "ParallelTempered"
-# NTemps = 10          
-# NWalkers = 100      
-# Threads = 8        
+# NTemps = 10
+# NWalkers = 100
+# Threads = 8
 
-# BurnLength = 10000     
-# RunLength = 10000  
+# BurnLength = 10000
+# RunLength = 10000
 
 
-### Fitter 
+### Fitter
 # Initialize Fitter
-Fitter = FitterClass(Table, Info, FitBound, P, Trial = Trial)
+Fitter = FitterClass(Table, Info, FitBound, P, Explore = Explore)
 # LoadData
 DF = pd.read_csv(GRB)
 Times, TimeBnds, Fluxes, FluxErrs, Freqs = DF['Times'].values, DF['TimeBnds'].values, DF['Fluxes'].values, DF['FluxErrs'].values, DF['Freqs'].values
@@ -87,7 +91,7 @@ Fitter.GetSampler(SamplerType, NTemps, NWalkers, Threads)
 ### Fitting
 # Burning in
 BurnInResult = Fitter.BurnIn(BurnLength = BurnLength)
-# Fitting and store chain results to Result 
+# Fitting and store chain results to Result
 Result = Fitter.RunSampler(RunLength = RunLength, Output = None)
 
 
@@ -124,17 +128,17 @@ def PltDF(ax, DF, ColorList=['orange','red','g','b'], ScaleFactor=[1.,1.,1.,1.],
             label='%.1e' %Freq
         ax.errorbar(Times, Fluxes*Scale, yerr = FluxErrs*Scale, color=Color, fmt = '.', label=label)
 
-    ax.set_yscale('log')                                                                              
-    ax.set_xscale('log')     
-    ax.set_ylabel('Flux density (mJy)')     
+    ax.set_yscale('log')
+    ax.set_xscale('log')
+    ax.set_ylabel('Flux density (mJy)')
     if XAxisDay:
-        ax.set_xlabel('Time (day)') 
+        ax.set_xlabel('Time (day)')
     else:
-        ax.set_xlabel('Time (s)') 
-    if Legend: 
+        ax.set_xlabel('Time (s)')
+    if Legend:
         ax.legend(loc=0);
 
-# Find the best fitting parameters        
+# Find the best fitting parameters
 TheChain = Result['Chain']
 LnProbability = Result['LnProbability']
 FitDim = len(Info['Fit'])
@@ -147,7 +151,7 @@ BestLinearParameter = Log2Linear(BestParameter, Info)
 BestP = P.copy()
 for i, key in enumerate(Info['Fit']):
     BestP[key] = BestLinearParameter[i]
-    
+
 
 # Plot best fitting light curves
 fig, ax = plt.subplots(figsize=(8,8));
@@ -159,13 +163,13 @@ PltDF(ax, DF, ColorList=ColorList, ScaleFactor=ScaleFactor, Legend=True, XAxisDa
 NPoints = 200
 Left = 1.; Right = 2.
 for i, Freq in enumerate(DF['Freqs'].unique()):
-    idx = DF['Freqs']==Freq    
+    idx = DF['Freqs']==Freq
     NewTimes = np.linspace(DF['Times'].min()*Left, DF['Times'].max()*Right, NPoints)
     NewFreqs = np.ones(len(NewTimes))*Freq
-    
-    ### Generate Fluxes 
+
+    ### Generate Fluxes
     FluxesModel = np.asarray(Fitter.FluxGenerator.GetSpectral(NewTimes, NewFreqs, BestP))
-    
+
     plt.loglog(NewTimes/24./3600., FluxesModel*ScaleFactor[i], '--', color=ColorList[i], linewidth=1.5);
 
 plt.savefig('light_curves.png')
@@ -208,6 +212,3 @@ for key in Label:
 print(Median)
 fig = c.plotter.plot(figsize='PAGE',truth=Median)
 plt.savefig('contour.png')
-
-
-
