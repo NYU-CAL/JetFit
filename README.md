@@ -10,7 +10,7 @@ The table is almost the same as the table used in [Wu \& MacFadyen (2018)](https
 Anaconda is recommened to be installed. The detailed python package list can be found in package_list.txt. To set up the virtual environment, run command `conda create --name JetFit --file package_list.txt` in terminal. Then, run `conda activate JetFit` to activate the environment.
 
 # Usage
-To fit a light curve, run `python Example_Fitter.py`.
+To fit the light curve from GW170817, run `python Example_Fitter.py`.
 
 # Module Description
 JetFit package consists of three classes: Interpolator, FluxGenerator and Fitter. FluxGenerator can be used separately.
