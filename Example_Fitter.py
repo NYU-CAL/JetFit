@@ -194,6 +194,7 @@ for x in Info['Fit']:
 
 # plot contour with ChainConsumer
 import corner
+Chain = Result['Chain'].reshape((-1, FitDim))
 fig = corner.corner(Chain, labels=Label, label_size=20, bins=40, plot_datapoints=False, 
                     quantiles=[0.16,0.5,0.84], show_titles = True, color='darkblue', 
                     label_kwargs={'fontsize': 18},
