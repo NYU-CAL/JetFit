@@ -46,6 +46,7 @@ https://conda.anaconda.org/conda-forge/osx-64/pip-19.0.2-py27_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/emcee-2.2.1-pyh24bf2e0_4.tar.bz2
 https://conda.anaconda.org/conda-forge/osx-64/h5py-2.9.0-nompi_py27h35dc34b_1102.tar.bz2
 https://conda.anaconda.org/conda-forge/osx-64/matplotlib-2.0.2-py27_2.tar.bz2
+https://conda.anaconda.org/conda-forge/noarch/corner-2.0.1-py_1001.tar.bz2
 https://conda.anaconda.org/conda-forge/osx-64/mkl_fft-1.0.10-py27h1de35cc_1.tar.bz2
 https://conda.anaconda.org/conda-forge/osx-64/mkl_random-1.0.2-py27h1702cab_2.tar.bz2
 https://repo.anaconda.com/pkgs/main/osx-64/numpy-1.15.4-py27hacdab7b_0.tar.bz2

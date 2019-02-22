@@ -193,22 +193,12 @@ for x in Info['Fit']:
 
 
 # plot contour with ChainConsumer
-from chainconsumer import ChainConsumer
+import corner
+fig = corner.corner(Chain, labels=Label, label_size=20, bins=40, plot_datapoints=False, 
+                    quantiles=[0.16,0.5,0.84], show_titles = True, color='darkblue', 
+                    label_kwargs={'fontsize': 18},
+                    title_kwargs={"fontsize": 18})
 
-FitDim = len(Info['Fit'])
-Chain = Result['Chain'].reshape((-1, FitDim))
+fig.savefig("contour.png")
 
-Label = Label
 
-c = ChainConsumer().add_chain(Chain, walkers=100, parameters=Label, name="Median")
-c.configure(spacing=1, bins=1., smooth=0, sigmas=[0,0.25,1,2,3], colors='b')
-c.configure_truth(color='blue', ls="--", alpha=0.5);
-
-Median = {}
-Summary = c.analysis.get_summary()
-for key in Label:
-    Median[key] = Summary[key][1]
-
-print(Median)
-fig = c.plotter.plot(figsize='PAGE',truth=Median)
-plt.savefig('contour.png')
